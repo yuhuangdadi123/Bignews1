@@ -1,5 +1,38 @@
 /* 沙箱模式 */
 (function(w){
+    // 设置全局请求头 headers  全局请求头不会被 $.ajax() 里的 headers 覆盖掉
+    $.ajaxSetup({
+        beforeSend:function(){
+            // NProgress.start();
+            if(window.Nprogress){
+                NProgress.start();
+            }
+        },
+        headers:{
+            Authorization:localStorage.getItem('token')
+        },
+        // success:function(){
+            // alart('成功')
+        // },
+        error:function(){
+            $('.modal').modal();
+            $('.modal p').html('获取数据失败，请重新登录');
+        },
+        complete:function(){
+            // NProgress.done();
+            if(window.Nprogress){
+                NProgress.done();
+            }
+        }
+    })
+        $('.to-login').click(function(){
+            location.href='login.html';
+        })
+
+
+
+
+
     var baseURL = 'http://localhost:8080/api/v1'
     var BigNew = {
         baseURL:baseURL,//基地址

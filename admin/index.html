@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>大事件-后台首页</title>
+    <link rel="stylesheet" href="../nprogress/nprogress.css">
     <link rel="stylesheet" href="./libs/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/iconfont.css">
@@ -13,6 +14,12 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 导入bootstrap的js文件 -->
     <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+    <style>
+    .main iframe {
+        width: 100%;
+        height: 100%;
+    }
+    </style>
 </head>
 
 <body>
@@ -25,20 +32,20 @@
         </div>
         <!-- 左侧导航栏 -->
         <div class="menu">
-            <div class="level01 active"><a href="#" target="main_frame"><i
+            <div class="level01 active"><a href="./main_count.html" target="main_frame"><i
                         class="iconfont icon-yidiandiantubiao04"></i><span>首页</span></a></div>
-            <div class="level01"><a href="#"><i class="iconfont icon-icon-article"></i><span>文章管理</span><b
+            <div class="level01"><a href="./article_list.html" target="main_frame"><i class="iconfont icon-icon-article"></i><span>文章管理</span><b
                         class="iconfont icon-arrowdownl"></b></a></div>
             <ul class="level02">
-                <li><a href="#" target="main_frame"><i class="iconfont icon-previewright"></i><span>文章列表</span></a></li>
-                <li><a href="#" target="main_frame"><i class="iconfont icon-previewright"></i><span>发表文章</span></a></li>
-                <li><a href="#" target="main_frame"><i class="iconfont icon-previewright"></i><span>文章类别管理</span></a>
+                <li><a href="./article_list.html" target="main_frame"><i class="iconfont icon-previewright"></i><span>文章列表</span></a></li>
+                <li><a href="./article_release.html" target="main_frame"><i class="iconfont icon-previewright"></i><span>发表文章</span></a></li>
+                <li><a href="./article_category.html" target="main_frame"><i class="iconfont icon-previewright"></i><span>文章类别管理</span></a>
                 </li>
             </ul>
 
-            <div class="level01"><a href="#" target="main_frame"><i
+            <div class="level01"><a href="./comment_list.html" target="main_frame"><i
                         class="iconfont icon-comment"></i><span>评论管理</span></a></div>
-            <div class="level01" id="user"><a href="#" target="main_frame"><i
+            <div class="level01" id="user"><a href="./user.html" target="main_frame"><i
                         class="iconfont icon-user"></i><span>个人中心</span></a></div>
         </div>
         <!-- 顶部栏 -->
@@ -51,10 +58,29 @@
         </div>
         <!-- 右侧主体内容 -->
         <div class="main" id="main_body">
-
+            <!-- iframe 标签 name 属性的值需要和 a 标签的 target 值保持一致 -->
+            <iframe name="main_frame" src="./main_count.html" frameborder="0"></iframe>
         </div>
     </div>
-
+    <!-- 从 BS 的官网复制过来的结构 -->
+    <div class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">温馨提示</h4>
+            </div>
+            <div class="modal-body">
+            <p></p>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-success to-login" data-dismiss="modal">去登录</button>
+            </div>
+        </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <script src="../nprogress/nprogress.js"></script>
+    <script src="./js/http.js"></script>
     <script>
 //    #### 获取用户详情
 //    请求地址：http://localhost:8080/api/v1/admin/user/detail
@@ -63,20 +89,25 @@
     $(function(){
         $.ajax({
             type: "get",
-            url: "http://localhost:8080/api/v1/admin/user/detail",
-            headers:{
-                Authorization:localStorage.getItem('token')
-            },
+            // url: "http://localhost:8080/api/v1/admin/user/detail",
+            url:BigNew.user_detail,
+            // 引入的http.js全局里面设置了请求头
+            // headers:{
+            //     Authorization:localStorage.getItem('token')
+            // },
             dataType: "json",
             success: function (res) {
-                console.log(res);
+                // console.log(res);
                 if(res.code === 200){
                     $('.header_bar').find('img').attr({
+                        // 获取用户头像
                         src:res.data.userPic
                     });
                     $('.user_info').children('img').attr({
+                        // 获取用户名称
                         src:res.data.userPic
                     });
+                    // 设置左边用户名称
                     $('.user_info').find('strong').html(res.data.nickname);
                 }
             }
@@ -87,11 +118,34 @@
             location.href='./login.html';
         });
 
+        //点击左侧选项卡高亮
+        $('.level01').click(function(e){
+            $(this).addClass('active').siblings().removeClass('active');
+             // 判断当前点击元素的下一个兄弟时候有 level02 的类名，如果有，就展开
+            if($(this).next().hasClass('level02')){
+                $('.level02').slideToggle();
+                //三角形旋转
+                $(this).find('b').toggleClass('rotate0');
+                //li的 默认第一个亮
+                $('.level02').find('li').eq(0).addClass('active').siblings().removeClass();
+            }else{
+                //点击其他 文章列表不亮
+                $('.level02 li').removeClass('active');
+            }
+        })
 
+        // 二级菜单点击也能排他切换
+        $('.level02 li').click(function(){
+            $(this).addClass('active').siblings().removeClass('active');
+            //在其他（例如个人中心）点击发表文章时，文章管理会高亮  prev 上一个
+            $(this).parent().prev().addClass('active').siblings().removeClass('active');
+        });
 
-
-
-
+        //点击顶部个人中心 左侧个人中心高亮
+        $('.user_center_link').eq(0).click(function(){
+            $('#user').addClass('active').siblings().removeClass('active');
+            $('.level02 li').removeClass('active');
+        })
 
     })
     
